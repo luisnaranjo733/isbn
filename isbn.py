@@ -1,6 +1,8 @@
-from android import droid
+import android
 from biblio.webquery.xisbn import XisbnQuery
 from biblio.webquery.errors import QueryError
+
+droid = android.Android()
 
 def request(isnb, attrs=['title', 'year', 'authors']):
     book = {}
@@ -24,22 +26,23 @@ def request(isnb, attrs=['title', 'year', 'authors']):
 
 def describe(book):
     for key in book:
+        sep = 'is'
         value = book[key]
         if isinstance(value, list):
-            value = ' '.join([a.family for a in value])
-        line = "%s is %s" % (key.upper(), value)
+            value = ', '.join([a.family for a in value])
+            if len(value) > 1:
+                sep ='are'
+        line = "%s %s %s" % (key.upper(), sep, value)
         yield line
 
 
 
-#code = droid.scanBarcode()
-#isbn = code.result['extras']['SCAN_RESULT']
-isbn = '9780451524935'
+code = droid.scanBarcode()
+isbn = code.result['extras']['SCAN_RESULT']
+#isbn = '9780451524935'
 info = request(isbn)
 
 output = [a for a in describe(info)]
-print(output)
-
 title = "Found: '%s'" % info['title']
 message = '\n'.join(output)
 
