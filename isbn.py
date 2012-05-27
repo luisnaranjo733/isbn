@@ -7,7 +7,7 @@ from biblio.webquery.errors import QueryError
 #TODO: Loop the main() function
 #TODO: Add a way to break out of the loop
 
-DEBUG = False
+DEBUG = True
 TTS = True
 ASK = False
 
