@@ -39,9 +39,9 @@ def describe(book):
 
 
 
-#code = droid.scanBarcode()
-#isbn = code.result['extras']['SCAN_RESULT']
-isbn = '9780451524935'
+code = droid.scanBarcode()
+isbn = code.result['extras']['SCAN_RESULT']
+#isbn = '9780451524935'
 info = request(isbn)
 
 output = [a for a in describe(info)]
@@ -76,10 +76,7 @@ if TTS:
 while droid.ttsIsSpeaking().result:
     pass  # Prevents the script from exiting before TTS is done.
 
-print "Phone: %r" % sys.platform == 'linux-armv6l'
-
-if sys.platform == 'linux-armv61':  # TODO: This only works for my phone's architecture.
-    path = '/sdcard/sl4a/scripts/isbn/books.txt'
+path = '/sdcard/sl4a/scripts/isbn/books.txt'
 if sys.platform == 'linux2':  # For development
     path = '/home/luis/Dropbox/projects/android/isbn/books.txt'
 
@@ -93,3 +90,4 @@ with open(path, 'a') as fhandle:
     #fhandle.write(unicode(title,"utf-8").encode("utf-8","ignore"))  
     fhandle.write(entry)
 
+sys.exit(0)
