@@ -4,7 +4,12 @@ import android
 from biblio.webquery.xisbn import XisbnQuery
 from biblio.webquery.errors import QueryError
 
-droid = android.Android()
+#TODO: Loop the main() function
+#TODO: Add a way to break out of the loop
+
+DEBUG = False
+TTS = True
+ASK = False
 
 def request(isnb, attrs=['title', 'year', 'authors']):
     book = {}
@@ -34,63 +39,66 @@ def describe(book):
             value = ', '.join([a.family for a in value])
             if len(value) > 1:
                 sep ='are'
-        line = "%s %s %s" % (key.upper(), sep, value)
+        line = "%s: %s" % (key.upper(), value)
         yield line
 
 
+def main(droid, TTS, ASK):
+    global isbn
 
-code = droid.scanBarcode()
-isbn = code.result['extras']['SCAN_RESULT']
-#isbn = '9780451524935'
-info = request(isbn)
+    if not DEBUG:
+        code = droid.scanBarcode()
+        isbn = code.result['extras']['SCAN_RESULT']
+    if DEBUG:
+        isbn = '9780451524935'
 
-output = [a for a in describe(info)]
-title = info['title']
-title_msg = "Found: '%s'" % title
-message = '\n'.join(output)
+    info = request(isbn)
 
-droid.dialogCreateAlert(title_msg, message)
+    output = [a for a in describe(info)]
+    title = info['title']
+    title_msg = "Found: '%s'" % title
+    message = '\n'.join(output)
 
+    if TTS is not None and ASK:
+        droid.dialogCreateAlert(title_msg, message)
+        droid.dialogSetPositiveButtonText("Speak")
+        droid.dialogSetNeutralButtonText("Don't speak")
+        droid.dialogShow()
+        response=droid.dialogGetResponse().result
+        TTS = None
 
-droid.dialogSetPositiveButtonText("Speak")
-droid.dialogSetNeutralButtonText("Don't speak")
+        if response['which'] == 'positive':
+            TTS = True
 
+        if response['which'] == 'negative':
+            TTS = False
 
-droid.dialogShow()
+    if not ASK:
+        droid.makeToast(message)
 
+    droid.dialogDismiss()
+    if TTS:
+        droid.ttsSpeak(title)
 
-response=droid.dialogGetResponse().result
+    while droid.ttsIsSpeaking().result:
+        pass  # Prevents the script from exiting before TTS is done.
 
-TTS = None
+    path = '/sdcard/sl4a/scripts/isbn/books.txt'
+    if sys.platform == 'linux2':  # For development
+        path = '/home/luis/Dropbox/projects/android/isbn/books.txt'
 
-if response['which'] == 'positive':
-    TTS = True
-if response['which'] == 'negative':
-    TTS = False
+    title = title
 
+    buff = '| '
 
-droid.dialogDismiss()
-if TTS:
-    droid.ttsSpeak(title)
+    entry = title + buff + ', '.join([a.family for a in info['authors']]) + buff + isbn + '\n'
 
-while droid.ttsIsSpeaking().result:
-    pass  # Prevents the script from exiting before TTS is done.
-
-path = '/sdcard/sl4a/scripts/isbn/books.txt'
-if sys.platform == 'linux2':  # For development
-    path = '/home/luis/Dropbox/projects/android/isbn/books.txt'
-
-title = title
-
-buff = '| '
-
-entry = title + buff + ', '.join([a.family for a in info['authors']]) + buff + isbn + '\n'
-
-with open(path, 'a') as fhandle:
-    #fhandle.write(unicode(title,"utf-8").encode("utf-8","ignore"))  
-    fhandle.write(entry)
+    with open(path, 'a') as fhandle:
+        #fhandle.write(unicode(title,"utf-8").encode("utf-8","ignore"))  
+        fhandle.write(entry)
 
 if __name__ == '__main__':
-    print "MAIN", __name__
+    droid = android.Android()
+    main(droid, TTS, ASK)
 
 sys.exit(0)
