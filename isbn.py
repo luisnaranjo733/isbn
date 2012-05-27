@@ -43,10 +43,11 @@ isbn = code.result['extras']['SCAN_RESULT']
 info = request(isbn)
 
 output = [a for a in describe(info)]
-title = "Found: '%s'" % info['title']
+title = info['title']
+title_msg = "Found: '%s'" % title
 message = '\n'.join(output)
 
-droid.dialogCreateAlert(title, message)
+droid.dialogCreateAlert(title_msg, message)
 
 
 droid.dialogSetPositiveButtonText("Speak")
@@ -68,9 +69,10 @@ if response['which'] == 'negative':
 
 droid.dialogDismiss()
 if TTS:
-    for line in output:
-        droid.ttsSpeak(line)
+    droid.ttsSpeak(title)
 
+while droid.ttsIsSpeaking().result:
+    print droid.ttsIsSpeaking().result
 
 
 
