@@ -83,9 +83,13 @@ if sys.platform == 'linux-armv61':  # TODO: This only works for my phone's archi
 if sys.platform == 'linux2':  # For development
     path = '/home/luis/Dropbox/projects/android/isbn/books.txt'
 
-title = title + '\n'
+title = title
+
+buff = '| '
+
+entry = title + buff + ', '.join([a.family for a in info['authors']]) + buff + isbn + '\n'
 
 with open(path, 'a') as fhandle:
     #fhandle.write(unicode(title,"utf-8").encode("utf-8","ignore"))  
-    fhandle.write(title)
+    fhandle.write(entry)
 
