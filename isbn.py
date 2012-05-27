@@ -90,4 +90,7 @@ with open(path, 'a') as fhandle:
     #fhandle.write(unicode(title,"utf-8").encode("utf-8","ignore"))  
     fhandle.write(entry)
 
+if __name__ == '__main__':
+    print "MAIN", __name__
+
 sys.exit(0)
