@@ -13,6 +13,15 @@ tests = {
         'city': 'Boston',
 
     },
+    '9780451524935' : {
+        'isbn10': '0451524934',  # These should all be expected attributes of the new instance
+        'isbn13': '9780451524935',
+        'title': "1984 : a novel",
+        'author': "by George Orwell ; with an afterword by Erich Fromm.",
+        'publisher': "Signet Classic",
+        'year': '1961',
+        'city': 'New York, N.Y.',
+    },
 }
 
 

@@ -1,7 +1,7 @@
 ISBN
 ****
 
-A Python isbn request library using http://xisbn.worldcat.org/xisbnadmin/doc/api.htm
+A Python isbn request library using the http://xisbn.worldcat.org/xisbnadmin/doc/api.htm API.
 
 **Under Active Development**
 

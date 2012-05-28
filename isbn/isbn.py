@@ -39,6 +39,7 @@ class Book(object):
         if status == 'ok':
             return response
         else:
+            return None
             raise Exception("Could not find '%s'\n\tReason: %s" % (self.isbn, status))  # TODO: Add a fallback on the to13 or to10 methods of the API
 
 
@@ -47,6 +48,7 @@ class Book(object):
 
         acquired_attributes = []
         response = self.get_response('getMetadata')
+        if not response: return  # Break here if invalid.
         for data in response['list']:
             for name in desired_attributes:
                 if data.has_key(name):
@@ -64,35 +66,31 @@ class Book(object):
     def to13(self):
         isbns = []
         response = self.get_response('to13')
+        if not response: return  # Break here if invalid.
         for item in response['list']:
             for isbn in item['isbn']: isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
         #print "isbn10: %s --> isbn13: %s" % (self.isbn, isbns[0])
         self.isbn13 = isbns[0]
-        return isbns
+        return isbns[0]  # TODO: Return the whole list?
 
 
     def to10(self):
         isbns = []
         response = self.get_response('to10')
+        if not response: return  # Break here if invalid.
         for item in response['list']:
             for isbn in item['isbn']: isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
         #print "isbn13: %s --> isbn10: %s" % (self.isbn, isbns[0])
         self.isbn10 = isbns[0]
-        return isbns
+        return isbns[0]  # TODO: Return the whole list?
 
 
     def __repr__(self):
         return "<Book(isbn='%s')>" % self.isbn
 
-'0312538618'
+book = Book('9780451524935')
+book.getMetadata()
+book.to10()
 
-api = Book(isbn='9780312538613')
-api.to10()
-for attr in api.attributes:
-    print attr, getattr(api, attr)
-
-assert api.isbn10 == '0312538618'
-#api.getMetadata()
-#api.to13()
-#print "ISBN-13 = %s" % api.isbn13
-#print "ISBN-10 = %s" % api.isbn10
+for attribute in book.attributes:
+    print attribute, '-->', getattr(book, attribute)
