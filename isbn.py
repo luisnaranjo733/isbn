@@ -12,8 +12,13 @@ from pprint import pprint
 #TODO: Add a way to break out of the loop
 #TODO: Add suport for 'SCAN_RESULT_FORMAT': u'UPC_A' 10 digit ISBN on old books
 
-global rpc_key
+global rpc_key, path
 rpc_key = 'ffffa702254fa9ace07a44cfb15847a015a985fd'
+
+path = '/sdcard/sl4a/scripts/isbn/books.txt'
+if sys.platform == 'linux2':  # For development
+    path = '/home/luis/Dropbox/projects/android/isbn/books.txt'
+
 
 DEBUG = False  # Possible bug on phone when True
 TTS = False
@@ -42,9 +47,12 @@ def request(isnb, attrs=['title', 'authors']):
         results = query.query_bibdata_by_isbn(isbn)
     except QueryError, error:
         print("QUERY ERROR")
-        print(error)
+        return lookup_upc(isnb)
 
-    result = results[0]  # Get first result
+    try:
+        result = results[0]  # Get first result
+    except IndexError:
+        result = results
 
     for attr in attrs:
         value = getattr(result, attr)
@@ -71,6 +79,9 @@ def main(droid, TTS, ASK):
     if not DEBUG:
         code = droid.scanBarcode()  # SCAN_RESULT_FORMAT
         isbn = code.result['extras']['SCAN_RESULT']
+        if isbn == "000000000000":
+            droid.makeToast("Exiting loop.\nBye Bye!")
+            return False
         fmt = code.result['extras']['SCAN_RESULT_FORMAT']
     if DEBUG:
         isbn = '9780451524935'
@@ -109,10 +120,6 @@ def main(droid, TTS, ASK):
     while droid.ttsIsSpeaking().result:
         pass  # Prevents the script from exiting before TTS is done.
 
-    path = '/sdcard/sl4a/scripts/isbn/books.txt'
-    if sys.platform == 'linux2':  # For development
-        path = '/home/luis/Dropbox/projects/android/isbn/books.txt'
-
     title = title
 
     buff = '| '
@@ -127,7 +134,9 @@ def main(droid, TTS, ASK):
         fhandle.write(entry)
         print("Added: " + entry)
 
+    return True
 if __name__ == '__main__':
     droid = android.Android()
-    main(droid, TTS, ASK)
+    while main(droid, TTS, ASK):
+        pass
     sys.exit(0)

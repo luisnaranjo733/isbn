@@ -1,5 +1,12 @@
 import android
 
+
+droid = android.Android()
+code = droid.scanBarcode()
+
+print code
+
+"""
 from biblio.webquery.xisbn import XisbnQuery
 from biblio.webquery.errors import QueryError
 from pprint import pprint
@@ -91,5 +98,5 @@ isbn = code.result['extras']['SCAN_RESULT'][1:-1]
 isbn13 = convert_10_to_13(isbn)
 print(isbn13)
 
-print(request(isbn13))
+print(request(isbn13))"""
 
