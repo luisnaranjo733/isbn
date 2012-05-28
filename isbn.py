@@ -1,146 +1,65 @@
-import sys
-
-import android
-
-from biblio.webquery.xisbn import XisbnQuery
-from biblio.webquery.errors import QueryError
-from xmlrpclib import ServerProxy, Error
+try:
+    import simplejson as json
+except ImportError:
+    import json
+from urllib import urlopen
 from pprint import pprint
 
 
-#TODO: Loop the main() function
-#TODO: Add a way to break out of the loop
-#TODO: Add suport for 'SCAN_RESULT_FORMAT': u'UPC_A' 10 digit ISBN on old books
+methods = ['getMetadata', 'to13', 'to10', 'fixChecksum', 'getEditions']
+supported_methods = methods[:3]
 
-global rpc_key, path
-rpc_key = 'ffffa702254fa9ace07a44cfb15847a015a985fd'
-
-path = '/sdcard/sl4a/scripts/isbn/books.txt'
-if sys.platform == 'linux2':  # For development
-    path = '/home/luis/Dropbox/projects/android/src/books.txt'
+api_url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{isbn}?method={method}&format={fmt}&fl=*'  # formats available: (python,csv,xml)
 
 
-DEBUG = True  # Possible bug on phone when True
-TTS = True
-ASK = False
+class Book(object):
+    def __init__(self, isbn, method, fmt='json'):
+        """Takes url and method as input, returns API object.
 
-def lookup_upc(upc):  # For looking up upc's (COSTS MONEY - 20 freebies a day)
-    server = ServerProxy('http://www.upcdatabase.com/xmlrpc')
-    params = {'rpc_key': rpc_key, 'upc': upc}
-    response = server.lookup(params) # Dict - Keys: upc, ean, description, issuerCountry
-    if response['status'] == 'success':
-        book = {}
-        book['isbn']  = upc
-        book['title'] = response['description']
-        book['upc'] = response['upc']
-        book['ean'] = response['ean']
-        book['authors'] = None
-        return book
-        
+        Attributes are created dynamically, depending on their availability."""
+        self.isbn = isbn
+        self.method = method
+        self.attributes = []
 
+        url = api_url.format(isbn=isbn, method=method, fmt=fmt)  # Generate URL for api
+        urlf = urlopen(url)  # Retrieve url as a JSON file object
+        response = json.load(urlf)  # Parse
+        urlf.close()
 
-def request(isnb, attrs=['title', 'authors']):
-    book = {}
-    book['isbn'] = isbn
-    query = XisbnQuery()
-    try:
-        results = query.query_bibdata_by_isbn(isbn)
-    except QueryError, error:
-        print("QUERY ERROR (EAN_13)")
-        print("TRYING UPC_A")
-        return lookup_upc(isnb)
+        status = response['stat']
+        if status == 'ok':
+            self.api = response
+        else:
+            self.api = None
+            raise Exception("Could not find '%s'\n\tReason: %s" % (isbn, status))  # TODO: Add a fallback on the to13 or to10 methods of the API
 
-    try:
-        result = results[0]  # Get first result
-    except IndexError:
-        result = results
+        execute_method = getattr(self, method)
+        execute_method()
 
-    for attr in attrs:
-        value = getattr(result, attr)
+    def getMetadata(self):
+        desired_attributes = ['title', 'author', 'publisher', 'year', 'city']
+        for data in self.api['list']:
+            for name in desired_attributes:
+                if data.has_key(name):
+                    value = data[name]
+                    setattr(self, name, value)  
+                    self.attributes.append(name)
 
-        line = "%s: %s" % (attr.upper(), value)
-        #print(line)
-        book[attr] = value
+        print "Parsing metadata...."
 
-    return book
+    def to13(self):
+        print "Turning %s into isbn-13..." % self.isbn
 
-def describe(book):  # Compatible
-    for key in book:
-        value = book[key]
-        if isinstance(value, list):
-            value = ', '.join([a.family for a in value])  # Turning family attribute list into a nice string
-
-        line = "%s: %s" % (key.upper(), value)
-        yield line
+    def to10(self):
+        isbns = []
+        for item in self.api['list']:
+            for isbn in item['isbn']: isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
+        print "isbn13: %s --> isbn10: %s" % (self.isbn, isbns[0])
 
 
-def main(droid, TTS, ASK):
-    global isbn
-    if not DEBUG:
-        code = droid.scanBarcode()  # SCAN_RESULT_FORMAT
-        isbn = code.result['extras']['SCAN_RESULT']
-        if isbn == "000000000000":
-            droid.makeToast("Exiting loop.\nBye Bye!")
-            return False
-        fmt = code.result['extras']['SCAN_RESULT_FORMAT']
-    if DEBUG:
-        isbn = '9780451524935' # len13
-        fmt = 'EAN_13'
-        isbn = '070993004507'  # len12
-        fmt = 'EAN_13'#'UPC_A'
+    def __repr__(self):
+        return "<Book(isbn='%s', method='%s')>" % (self.isbn, self.method)
 
-    if fmt == 'EAN_13':
-        info = request(isbn)
-    if fmt == 'UPC_A':
-        info = lookup_upc(upc=isbn)
+api = Book(isbn='9780312538613', method='to10')
+#api.getMetadata()
 
-    output = [a for a in describe(info)]
-    title = info['title']
-    title_msg = "Found: '%s'" % title
-    message = '\n'.join(output)
-
-    if TTS is not None and ASK:
-        droid.dialogCreateAlert(title_msg, message)
-        droid.dialogSetPositiveButtonText("Speak")
-        droid.dialogSetNeutralButtonText("Don't speak")
-        droid.dialogShow()
-        response=droid.dialogGetResponse().result
-        TTS = None
-
-        if response['which'] == 'positive':
-            TTS = True
-
-        if response['which'] == 'negative':
-            TTS = False
-
-    if not ASK:
-        droid.makeToast(message)
-
-    droid.dialogDismiss()
-    if TTS:
-        droid.ttsSpeak(title)
-
-    while droid.ttsIsSpeaking().result:
-        pass  # Prevents the script from exiting before TTS is done.
-
-    title = title
-
-    buff = '| '
-
-    if fmt == 'EAN_13':
-        entry = title + buff + ', '.join([a.family for a in info['authors']]) + buff + isbn + '\n'
-    if fmt == 'UPC_A':
-        entry = title + buff + str(info['authors']) + buff + isbn + '\n'
-
-    with open(path, 'a') as fhandle:
-        #fhandle.write(unicode(title,"utf-8").encode("utf-8","ignore"))  
-        fhandle.write(entry)
-        print("Added: " + entry)
-
-    return True
-if __name__ == '__main__':
-    droid = android.Android()
-    while main(droid, TTS, ASK):
-        if DEBUG: break
-
-    sys.exit(0)
