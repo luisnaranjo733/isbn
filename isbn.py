@@ -17,11 +17,11 @@ rpc_key = 'ffffa702254fa9ace07a44cfb15847a015a985fd'
 
 path = '/sdcard/sl4a/scripts/isbn/books.txt'
 if sys.platform == 'linux2':  # For development
-    path = '/home/luis/Dropbox/projects/android/isbn/books.txt'
+    path = '/home/luis/Dropbox/projects/android/src/books.txt'
 
 
-DEBUG = False  # Possible bug on phone when True
-TTS = False
+DEBUG = True  # Possible bug on phone when True
+TTS = True
 ASK = False
 
 def lookup_upc(upc):  # For looking up upc's (COSTS MONEY - 20 freebies a day)
@@ -46,7 +46,8 @@ def request(isnb, attrs=['title', 'authors']):
     try:
         results = query.query_bibdata_by_isbn(isbn)
     except QueryError, error:
-        print("QUERY ERROR")
+        print("QUERY ERROR (EAN_13)")
+        print("TRYING UPC_A")
         return lookup_upc(isnb)
 
     try:
@@ -75,7 +76,6 @@ def describe(book):  # Compatible
 
 def main(droid, TTS, ASK):
     global isbn
-
     if not DEBUG:
         code = droid.scanBarcode()  # SCAN_RESULT_FORMAT
         isbn = code.result['extras']['SCAN_RESULT']
@@ -84,7 +84,10 @@ def main(droid, TTS, ASK):
             return False
         fmt = code.result['extras']['SCAN_RESULT_FORMAT']
     if DEBUG:
-        isbn = '9780451524935'
+        isbn = '9780451524935' # len13
+        fmt = 'EAN_13'
+        isbn = '070993004507'  # len12
+        fmt = 'EAN_13'#'UPC_A'
 
     if fmt == 'EAN_13':
         info = request(isbn)
@@ -138,5 +141,6 @@ def main(droid, TTS, ASK):
 if __name__ == '__main__':
     droid = android.Android()
     while main(droid, TTS, ASK):
-        pass
+        if DEBUG: break
+
     sys.exit(0)
