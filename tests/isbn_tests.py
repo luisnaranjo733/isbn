@@ -1,6 +1,4 @@
-import sys
-sys.path.append('/home/luis/Dropbox/projects/android/isbn')
-from isbn.isbn import Book
+from isbn import Book
 
 tests = {
     '9780312538613': {  # ISBN at __init__
@@ -21,11 +19,22 @@ tests = {
         'publisher': "Signet Classic",
         'year': '1961',
         'city': 'New York, N.Y.',
+
+    },
+    '9780439784542' : {
+        'isbn10': '0439784549',  # These should all be expected attributes of the new instance
+        'isbn13': '9780439784542',
+        'title': "Harry Potter and the half-blood prince",
+        #'author': 'J.K. Rowling ; illustrations by Mary GrandPr\xc3.',  # Ommitting this one because it has a non-ASCII char in it
+        'publisher': "Scholastic Inc.",
+        'year': '2005',
+        'city': 'New York, NY',
+
     },
 }
 
 
-def test_all():
+def test_api():
     for isbn in tests:
         info = tests[isbn]
         book = Book(isbn)
@@ -38,4 +47,4 @@ def test_all():
         for attribute in info:
             assert getattr(book, attribute) == info[attribute]
 
-test_all()
+test_api()

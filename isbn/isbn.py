@@ -88,7 +88,7 @@ class Book(object):
     def __repr__(self):
         return "<Book(isbn='%s')>" % self.isbn
 
-book = Book('9780451524935')
+book = Book('9780439784542')
 book.getMetadata()
 book.to10()
 
