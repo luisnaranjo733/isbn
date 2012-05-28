@@ -1,15 +1,31 @@
 import sys
 
 import android
+
 from biblio.webquery.xisbn import XisbnQuery
 from biblio.webquery.errors import QueryError
+from xmlrpclib import ServerProxy, Error
+from pprint import pprint
+
 
 #TODO: Loop the main() function
 #TODO: Add a way to break out of the loop
+#TODO: Add suport for 'SCAN_RESULT_FORMAT': u'UPC_A' 10 digit ISBN on old books
 
-DEBUG = True
+global rpc_key
+rpc_key = 'ffffa702254fa9ace07a44cfb15847a015a985fd'
+
+DEBUG = False  # Possible bug on phone when True
 TTS = True
 ASK = False
+
+def lookup_upc(upc):  # For looking up upc's (COSTS MONEY - 20 freebies a day)
+    server = ServerProxy('http://www.upcdatabase.com/xmlrpc')
+    params = {'rpc_key': rpc_key, 'upc': upc}
+    response = server.lookup(params)
+    if response['status'] == 'success':
+        return response  # Dict - Keys: upc, ean, description, issuerCountry
+
 
 def request(isnb, attrs=['title', 'year', 'authors']):
     book = {}
@@ -18,6 +34,7 @@ def request(isnb, attrs=['title', 'year', 'authors']):
     try:
         results = query.query_bibdata_by_isbn(isbn)
     except QueryError, error:
+        print("QUERY ERROR")
         print(error)
 
     result = results[0]
@@ -49,6 +66,7 @@ def main(droid, TTS, ASK):
     if not DEBUG:
         code = droid.scanBarcode()
         isbn = code.result['extras']['SCAN_RESULT']
+        pprint(code.result)
     if DEBUG:
         isbn = '9780451524935'
 
@@ -96,9 +114,9 @@ def main(droid, TTS, ASK):
     with open(path, 'a') as fhandle:
         #fhandle.write(unicode(title,"utf-8").encode("utf-8","ignore"))  
         fhandle.write(entry)
+        print("Added: " + entry)
 
 if __name__ == '__main__':
     droid = android.Android()
     main(droid, TTS, ASK)
-
-sys.exit(0)
+    sys.exit(0)
