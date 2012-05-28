@@ -27,6 +27,8 @@ class Book(object):
             self.isbn13 = isbn
             self.isbn10 = None
 
+        self.attributes.extend(['isbn10', 'isbn13'])
+
     def get_response(self, method):
         url = api_url.format(isbn=self.isbn, method=method)  # Generate URL for api
         urlf = urlopen(url)  # Retrieve url as a JSON file object
@@ -64,17 +66,17 @@ class Book(object):
         response = self.get_response('to13')
         for item in response['list']:
             for isbn in item['isbn']: isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
-        print "isbn10: %s --> isbn13: %s" % (self.isbn, isbns[0])
+        #print "isbn10: %s --> isbn13: %s" % (self.isbn, isbns[0])
         self.isbn13 = isbns[0]
         return isbns
 
 
     def to10(self):
         isbns = []
-        response = self.get_response('to13')
+        response = self.get_response('to10')
         for item in response['list']:
             for isbn in item['isbn']: isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
-        print "isbn13: %s --> isbn10: %s" % (self.isbn, isbns[0])
+        #print "isbn13: %s --> isbn10: %s" % (self.isbn, isbns[0])
         self.isbn10 = isbns[0]
         return isbns
 
@@ -82,7 +84,14 @@ class Book(object):
     def __repr__(self):
         return "<Book(isbn='%s')>" % self.isbn
 
-api = Book(isbn='0312538618')
+'0312538618'
+
+api = Book(isbn='9780312538613')
+api.to10()
+for attr in api.attributes:
+    print attr, getattr(api, attr)
+
+assert api.isbn10 == '0312538618'
 #api.getMetadata()
 #api.to13()
 #print "ISBN-13 = %s" % api.isbn13
