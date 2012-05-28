@@ -15,20 +15,18 @@ tests = {
     },
 }
 
-def test_book(isbn, info):
-    book = Book(isbn)
-    assert book.isbn == isbn
-
-    book.getMetadata()
-    book.to10()
-    book.to13()
-
-    for attribute in info:
-        assert getattr(book, attribute) == info[attribute]
-
 
 def test_all():
     for isbn in tests:
         info = tests[isbn]
-        test_book(isbn, info)
+        book = Book(isbn)
+        assert book.isbn == isbn
+
+        book.getMetadata()
+        book.to10()
+        book.to13()
+
+        for attribute in info:
+            assert getattr(book, attribute) == info[attribute]
+
 test_all()
