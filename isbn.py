@@ -16,18 +16,20 @@ global rpc_key
 rpc_key = 'ffffa702254fa9ace07a44cfb15847a015a985fd'
 
 DEBUG = False  # Possible bug on phone when True
-TTS = True
-ASK = False
+TTS = False
+ASK = True
 
 def lookup_upc(upc):  # For looking up upc's (COSTS MONEY - 20 freebies a day)
     server = ServerProxy('http://www.upcdatabase.com/xmlrpc')
     params = {'rpc_key': rpc_key, 'upc': upc}
-    response = server.lookup(params)
+    response = server.lookup(params) # Dict - Keys: upc, ean, description, issuerCountry
     if response['status'] == 'success':
-        return response  # Dict - Keys: upc, ean, description, issuerCountry
+        book = {}
+        book['isbn'] 
+        
 
 
-def request(isnb, attrs=['title', 'year', 'authors']):
+def request(isnb, attrs=['title', 'authors']):
     book = {}
     book['isbn'] = isbn
     query = XisbnQuery()
@@ -66,7 +68,6 @@ def main(droid, TTS, ASK):
     if not DEBUG:
         code = droid.scanBarcode()
         isbn = code.result['extras']['SCAN_RESULT']
-        pprint(code.result)
     if DEBUG:
         isbn = '9780451524935'
 
