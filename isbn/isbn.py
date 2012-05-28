@@ -3,23 +3,22 @@ try:
 except ImportError:
     import json
 from urllib import urlopen
-from pprint import pprint
-
 
 methods = ['getMetadata', 'to13', 'to10', 'fixChecksum', 'getEditions']
 supported_methods = methods[:3]
 
-api_url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{isbn}?method={method}&format={fmt}&fl=*'  # formats available: (python,csv,xml)
-
+api_url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{isbn}?method={method}&format=json&fl=*'  # formats available: (python,csv,xml)
+#  TODO: Add &ai={affiliate_ID}
 
 class Book(object):
-    def __init__(self, isbn, method, fmt='json'):
+    def __init__(self, isbn):
         """Takes url and method as input, returns API object.
 
         Attributes are created dynamically, depending on their availability."""
         self.isbn = isbn
-        self.method = method
-        self.attributes = []
+        self.attributes = []  # TODO: Maintain this
+        self.added_metadata = False
+
 
         if len(isbn) == 10:
             self.isbn10 = isbn
@@ -28,35 +27,42 @@ class Book(object):
             self.isbn13 = isbn
             self.isbn10 = None
 
-        url = api_url.format(isbn=isbn, method=method, fmt=fmt)  # Generate URL for api
+    def get_response(self, method):
+        url = api_url.format(isbn=self.isbn, method=method)  # Generate URL for api
         urlf = urlopen(url)  # Retrieve url as a JSON file object
         response = json.load(urlf)  # Parse
         urlf.close()
 
         status = response['stat']
         if status == 'ok':
-            self.api = response
+            return response
         else:
-            self.api = None
-            raise Exception("Could not find '%s'\n\tReason: %s" % (isbn, status))  # TODO: Add a fallback on the to13 or to10 methods of the API
+            raise Exception("Could not find '%s'\n\tReason: %s" % (self.isbn, status))  # TODO: Add a fallback on the to13 or to10 methods of the API
 
-        execute_method = getattr(self, method)
-        execute_method()
 
-    def getMetadata(self):
-        desired_attributes = ['title', 'author', 'publisher', 'year', 'city']
-        for data in self.api['list']:
+    def getMetadata(self, desired_attributes=['title', 'author', 'publisher', 'year', 'city']):
+        """Returns a list of the newly attributes."""
+
+        acquired_attributes = []
+        response = self.get_response('getMetadata')
+        for data in response['list']:
             for name in desired_attributes:
                 if data.has_key(name):
                     value = data[name]
                     setattr(self, name, value)  
-                    self.attributes.append(name)
+                    acquired_attributes.append(name)
+
+        if not self.added_metadata:
+            self.attributes.extend(acquired_attributes)
+            self.added_metadata = True
+        return acquired_attributes
 
         print "Parsing metadata...."
 
     def to13(self):
         isbns = []
-        for item in self.api['list']:
+        response = self.get_response('to13')
+        for item in response['list']:
             for isbn in item['isbn']: isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
         print "isbn10: %s --> isbn13: %s" % (self.isbn, isbns[0])
         self.isbn13 = isbns[0]
@@ -65,7 +71,8 @@ class Book(object):
 
     def to10(self):
         isbns = []
-        for item in self.api['list']:
+        response = self.get_response('to13')
+        for item in response['list']:
             for isbn in item['isbn']: isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
         print "isbn13: %s --> isbn10: %s" % (self.isbn, isbns[0])
         self.isbn10 = isbns[0]
@@ -73,10 +80,10 @@ class Book(object):
 
 
     def __repr__(self):
-        return "<Book(isbn='%s', method='%s')>" % (self.isbn, self.method)
+        return "<Book(isbn='%s')>" % self.isbn
 
-api = Book(isbn='0312538618', method='getMetadata')
+api = Book(isbn='0312538618')
 #api.getMetadata()
-api.to13()
-print "ISBN-13 = %s" % api.isbn13
-print "ISBN-10 = %s" % api.isbn10
+#api.to13()
+#print "ISBN-13 = %s" % api.isbn13
+#print "ISBN-10 = %s" % api.isbn10
