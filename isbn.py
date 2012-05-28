@@ -17,7 +17,7 @@ rpc_key = 'ffffa702254fa9ace07a44cfb15847a015a985fd'
 
 DEBUG = False  # Possible bug on phone when True
 TTS = False
-ASK = True
+ASK = False
 
 def lookup_upc(upc):  # For looking up upc's (COSTS MONEY - 20 freebies a day)
     server = ServerProxy('http://www.upcdatabase.com/xmlrpc')
@@ -25,7 +25,12 @@ def lookup_upc(upc):  # For looking up upc's (COSTS MONEY - 20 freebies a day)
     response = server.lookup(params) # Dict - Keys: upc, ean, description, issuerCountry
     if response['status'] == 'success':
         book = {}
-        book['isbn'] 
+        book['isbn']  = upc
+        book['title'] = response['description']
+        book['upc'] = response['upc']
+        book['ean'] = response['ean']
+        book['authors'] = None
+        return book
         
 
 
@@ -39,7 +44,7 @@ def request(isnb, attrs=['title', 'authors']):
         print("QUERY ERROR")
         print(error)
 
-    result = results[0]
+    result = results[0]  # Get first result
 
     for attr in attrs:
         value = getattr(result, attr)
@@ -50,14 +55,12 @@ def request(isnb, attrs=['title', 'authors']):
 
     return book
 
-def describe(book):
+def describe(book):  # Compatible
     for key in book:
-        sep = 'is'
         value = book[key]
         if isinstance(value, list):
-            value = ', '.join([a.family for a in value])
-            if len(value) > 1:
-                sep ='are'
+            value = ', '.join([a.family for a in value])  # Turning family attribute list into a nice string
+
         line = "%s: %s" % (key.upper(), value)
         yield line
 
@@ -66,12 +69,16 @@ def main(droid, TTS, ASK):
     global isbn
 
     if not DEBUG:
-        code = droid.scanBarcode()
+        code = droid.scanBarcode()  # SCAN_RESULT_FORMAT
         isbn = code.result['extras']['SCAN_RESULT']
+        fmt = code.result['extras']['SCAN_RESULT_FORMAT']
     if DEBUG:
         isbn = '9780451524935'
 
-    info = request(isbn)
+    if fmt == 'EAN_13':
+        info = request(isbn)
+    if fmt == 'UPC_A':
+        info = lookup_upc(upc=isbn)
 
     output = [a for a in describe(info)]
     title = info['title']
@@ -110,7 +117,10 @@ def main(droid, TTS, ASK):
 
     buff = '| '
 
-    entry = title + buff + ', '.join([a.family for a in info['authors']]) + buff + isbn + '\n'
+    if fmt == 'EAN_13':
+        entry = title + buff + ', '.join([a.family for a in info['authors']]) + buff + isbn + '\n'
+    if fmt == 'UPC_A':
+        entry = title + buff + str(info['authors']) + buff + isbn + '\n'
 
     with open(path, 'a') as fhandle:
         #fhandle.write(unicode(title,"utf-8").encode("utf-8","ignore"))  
