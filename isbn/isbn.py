@@ -5,10 +5,9 @@ except ImportError:
 from urllib import urlopen
 from pprint import pprint
 
-methods = ['getMetadata', 'to13', 'to10', 'fixChecksum', 'hyphen']
-supported_methods = methods[:3]
+methods = ['getEditions', 'getMetadata', 'to13', 'to10', 'fixChecksum', 'hyphen']
 
-api_url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{isbn}?method={method}&format=json&fl=*'  # formats available: (python,csv,xml)
+api_url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{isbn}?method={method}&format=json&fl=*'
 #  TODO: Add &ai={affiliate_ID}
 
 global maximal_attributes
@@ -48,7 +47,7 @@ class Book(object):
             return None
             raise Exception("Could not find '%s'\n\tReason: %s" % (self.isbn, status))  # TODO: Add a fall back on the to13 or to10 methods of the API
 
-    def getEditions(self, desired_attributes=maximal_attributes):
+    def getEditions(self, desired_attributes=maximal_attributes):  # TODO: Make a test for this one? There is a lot of output.
         response = self.get_response('getEditions')
         self.editions = []
         self.attributes.append('editions')  # A list of dictionaries holding information about each edition.
@@ -146,5 +145,5 @@ class Book(object):
 if __name__ == '__main__':
 
     book = Book('0446360260')
-    book.collect_all()
+    book.collect_all(minimal_attributes)
     pprint(book.editions)

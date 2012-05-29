@@ -23,7 +23,7 @@ tests = {
         'city': 'New York, N.Y.',
         'hyphenated': '978-0-451-52493-5',
         'fixedChecksum': '9780451524935',
-        
+
     },
     '9780439784542': {
         'isbn10': '0439784549',  # These should all be expected attributes of the new instance
@@ -35,7 +35,7 @@ tests = {
         'city': 'New York, NY',
         'hyphenated': '978-0-439-78454-2',
         'fixedChecksum': '9780439784542',
-        
+
     },
     '0446360260': {
         'isbn10': '0446360260',  # These should all be expected attributes of the new instance
@@ -47,7 +47,7 @@ tests = {
         'city': 'New York (N.Y.)',
         'hyphenated': '0-446-36026-0',
         'fixedChecksum': '0446360260',
-        
+
     },
 }
 
@@ -76,6 +76,4 @@ def test_api():
 
 
 if __name__ == '__main__':
-    import nose
-    #result = nose.run()
     test_api()
