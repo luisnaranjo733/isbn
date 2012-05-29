@@ -1,3 +1,8 @@
+"""A
+
+
+"""
+
 try:
     import simplejson as json
 except ImportError:
@@ -48,7 +53,7 @@ class Book(object):
             raise Exception("Could not find '%s'\n\tReason: %s" % (self.isbn, status))  # TODO: Add a fall back on the to13 or to10 methods of the API
 
     def getEditions(self, desired_attributes=maximal_parameters):  # TODO: Make a test for this one? There is a lot of output.
-        """This function does something.
+        """Gets info of all available editions of self.isbn.
 
 Args:
     desired_parameters (list of strings):  The parameters that you would like to search for.
@@ -58,12 +63,12 @@ Args:
 
 Returns:
     None
-    
+
 Sets:
     Creates Book().editions - A list of dictionaries.
         The keys to each dictionary are the desired_attributes.
         Values default to None if not found online.
-    
+
 Example:
     >>> book = Book('0446360260')
     >>> book.getEditions(['title', 'author'])
@@ -104,28 +109,40 @@ Example:
         return acquired_attributes
 
     def to13(self):
-        isbns = []
-        response = self.get_response('to13')
-        if not response:
-            return  # Break here if invalid.
-        for item in response['list']:
-            for isbn in item['isbn']:
-                isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
-        #print "isbn10: %s --> isbn13: %s" % (self.isbn, isbns[0])
-        self.isbn13 = isbns[0]
-        return isbns[0]  # TODO: Return the whole list?
+        """Converts an ISBN-10 number to ISBN-13.
+
+If the number is already ISBN-13, then nothing happens.
+The result gets stored in self.isbn13"""
+
+        if not self.isbn13:
+            isbns = []
+            response = self.get_response('to13')
+            if not response:
+                return  # Break here if invalid.
+            for item in response['list']:
+                for isbn in item['isbn']:
+                    isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
+            #print "isbn10: %s --> isbn13: %s" % (self.isbn, isbns[0])
+            self.isbn13 = isbns[0]
+            return isbns[0]  # TODO: Return the whole list?
 
     def to10(self):
-        isbns = []
-        response = self.get_response('to10')
-        if not response:
-            return  # Break here if invalid.
-        for item in response['list']:
-            for isbn in item['isbn']:
-                isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
-        #print "isbn13: %s --> isbn10: %s" % (self.isbn, isbns[0])
-        self.isbn10 = isbns[0]
-        return isbns[0]  # TODO: Return the whole list?
+        """Converts an ISBN-13 number to ISBN-10.
+
+If the number is already ISBN-10, then nothing happens.
+The result gets stored in self.isbn10"""
+
+        if not self.isbn10:
+            isbns = []
+            response = self.get_response('to10')
+            if not response:
+                return  # Break here if invalid.
+            for item in response['list']:
+                for isbn in item['isbn']:
+                    isbns.append(isbn)  # TODO: Overkill? Maybe I should just get the first result instead of going over every single result.
+            #print "isbn13: %s --> isbn10: %s" % (self.isbn, isbns[0])
+            self.isbn10 = isbns[0]
+            return isbns[0]  # TODO: Return the whole list?
 
     def fixChecksum(self):
         response = self.get_response('fixChecksum')
