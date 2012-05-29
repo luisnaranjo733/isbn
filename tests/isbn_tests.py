@@ -1,4 +1,4 @@
-from isbn import Book, minimal_attributes
+from isbn import Book, minimal_parameters
 
 tests = {
     '9780312538613': {  # ISBN at __init__
@@ -60,7 +60,7 @@ def test_api():
         book = Book(isbn)
         assert book.isbn == isbn
 
-        book.collect_all(minimal_attributes)  # Gather all possible information
+        book.collect_all(minimal_parameters)  # Gather all possible information
 
         for attribute in info:
             result = getattr(book, attribute) == info[attribute]

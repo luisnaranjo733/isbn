@@ -10,9 +10,9 @@ methods = ['getEditions', 'getMetadata', 'to13', 'to10', 'fixChecksum', 'hyphen'
 api_url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{isbn}?method={method}&format=json&fl=*'
 #  TODO: Add &ai={affiliate_ID}
 
-global maximal_attributes
-minimal_attributes = ['title', 'author', 'publisher', 'year', 'city']
-maximal_attributes = ['city', 'ed', 'form', 'AA', 'lang', 'lccn', 'oclcnum', 'originalLang', 'publisher', 'title', 'url', 'year']
+global maximal_parameters, minimal_parameters
+minimal_parameters = ['title', 'author', 'publisher', 'year', 'city']
+maximal_parameters = ['city', 'ed', 'form', 'AA', 'lang', 'lccn', 'oclcnum', 'originalLang', 'publisher', 'title', 'url', 'year']
 
 
 class Book(object):
@@ -47,7 +47,8 @@ class Book(object):
             return None
             raise Exception("Could not find '%s'\n\tReason: %s" % (self.isbn, status))  # TODO: Add a fall back on the to13 or to10 methods of the API
 
-    def getEditions(self, desired_attributes=maximal_attributes):  # TODO: Make a test for this one? There is a lot of output.
+    def getEditions(self, desired_attributes=maximal_parameters):  # TODO: Make a test for this one? There is a lot of output.
+
         response = self.get_response('getEditions')
         self.editions = []
         self.attributes.append('editions')  # A list of dictionaries holding information about each edition.
@@ -61,7 +62,7 @@ class Book(object):
                 edition[attribute] = value
             self.editions.append(edition)
 
-    def getMetadata(self, desired_attributes=maximal_attributes):
+    def getMetadata(self, desired_attributes=maximal_parameters):
         """Returns a list of the newly attributes."""
 
         acquired_attributes = []
@@ -123,7 +124,7 @@ class Book(object):
             return hyphenated
             break  # Is this necessary?
 
-    def collect_all(self, attributes=maximal_attributes):
+    def collect_all(self, attributes=maximal_parameters):
         self.getEditions(attributes)
         self.getMetadata(attributes)
         self.to10()
@@ -145,5 +146,5 @@ class Book(object):
 if __name__ == '__main__':
 
     book = Book('0446360260')
-    book.collect_all(minimal_attributes)
+    book.collect_all(minimal_parameters)
     pprint(book.editions)
