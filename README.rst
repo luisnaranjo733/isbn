@@ -17,8 +17,6 @@ Basic Usage
 >>> book.getMetadata()
 >>> book.title
 'Vocabulary workshop.'
-
->>> book = Book('9780821571095')  # ISBN-13
 >>> book.getMetadata()  # desired_parameters defaults to all of the possible values.
 >>> for attr in book.attributes:  # A list of attributes that is created dependinging the available data.
 >>>     print attr + ': ', getattr(book, attr)
