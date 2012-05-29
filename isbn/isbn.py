@@ -48,6 +48,28 @@ class Book(object):
             raise Exception("Could not find '%s'\n\tReason: %s" % (self.isbn, status))  # TODO: Add a fall back on the to13 or to10 methods of the API
 
     def getEditions(self, desired_attributes=maximal_parameters):  # TODO: Make a test for this one? There is a lot of output.
+        """This function does something.
+
+Args:
+    desired_parameters (list of strings):  The parameters that you would like to search for.
+        Pre-made minimal_parameters and maximal_parameters (default) are in the isbn.py script.
+        minimal_parameters = ['title', 'author', 'publisher', 'year', 'city']
+        maximal_parameters = ['city', 'ed', 'form', 'AA', 'lang', 'lccn', 'oclcnum', 'originalLang', 'publisher', 'title', 'url', 'year']
+
+Returns:
+    None
+    
+Sets:
+    Creates Book().editions - A list of dictionaries.
+        The keys to each dictionary are the desired_attributes.
+        Values default to None if not found online.
+    
+Example:
+    >>> book = Book('0446360260')
+    >>> book.getEditions(['title', 'author'])
+    >>> hasattr(book, 'editions')
+    True
+    """
 
         response = self.get_response('getEditions')
         self.editions = []
