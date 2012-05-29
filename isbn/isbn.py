@@ -3,12 +3,17 @@ try:
 except ImportError:
     import json
 from urllib import urlopen
+from pprint import pprint
 
 methods = ['getMetadata', 'to13', 'to10', 'fixChecksum', 'hyphen']
 supported_methods = methods[:3]
 
 api_url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{isbn}?method={method}&format=json&fl=*'  # formats available: (python,csv,xml)
 #  TODO: Add &ai={affiliate_ID}
+
+global minimal_attributes
+minimal_attributes = ['title', 'author', 'publisher', 'year', 'city']
+maximal_attributes = ['city', 'ed', 'form', 'AA', 'lang', 'lccn', 'oclcnum', 'originalLang', 'publisher', 'title', 'url', 'year']
 
 
 class Book(object):
@@ -43,7 +48,21 @@ class Book(object):
             return None
             raise Exception("Could not find '%s'\n\tReason: %s" % (self.isbn, status))  # TODO: Add a fall back on the to13 or to10 methods of the API
 
-    def getMetadata(self, desired_attributes=['title', 'author', 'publisher', 'year', 'city']):
+    def getEditions(self, desired_attributes=maximal_attributes):
+        response = self.get_response('getEditions')
+        self.editions = []
+        self.attributes.append('editions')  # A list of dictionaries holding information about each edition.
+        for item in response['list']:
+            edition = {}
+            for attribute in desired_attributes:
+                try:
+                    value = item[attribute]
+                except KeyError:  # Will happen if a desired attribute is not present in an edition entry.
+                    value = None
+                edition[attribute] = value
+            self.editions.append(edition)
+
+    def getMetadata(self, desired_attributes=maximal_attributes):
         """Returns a list of the newly attributes."""
 
         acquired_attributes = []
@@ -94,7 +113,7 @@ class Book(object):
                 self.fixedChecksum = fixedChecksum[0]
             self.attributes.append('fixedChecksum')
             return fixedChecksum
-            
+
     def hyphen(self):
         response = self.get_response('hyphen')
         for item in response['list']:
@@ -105,8 +124,9 @@ class Book(object):
             return hyphenated
             break  # Is this necessary?
 
-    def collect_all(self):
-        self.getMetadata()
+    def collect_all(self, attributes=maximal_attributes):
+        self.getEditions(attributes)
+        self.getMetadata(attributes)
         self.to10()
         self.to13()
         self.fixChecksum()
@@ -126,7 +146,5 @@ class Book(object):
 if __name__ == '__main__':
 
     book = Book('0446360260')
-    book.getMetadata()
-    book.to13()
-    book.hyphen()
-    print book.hyphenated
+    book.collect_all()
+    pprint(book.editions)
