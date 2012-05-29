@@ -11,7 +11,7 @@ supported_methods = methods[:3]
 api_url = 'http://xisbn.worldcat.org/webservices/xid/isbn/{isbn}?method={method}&format=json&fl=*'  # formats available: (python,csv,xml)
 #  TODO: Add &ai={affiliate_ID}
 
-global minimal_attributes
+global maximal_attributes
 minimal_attributes = ['title', 'author', 'publisher', 'year', 'city']
 maximal_attributes = ['city', 'ed', 'form', 'AA', 'lang', 'lccn', 'oclcnum', 'originalLang', 'publisher', 'title', 'url', 'year']
 
