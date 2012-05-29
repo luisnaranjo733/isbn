@@ -3,7 +3,7 @@ ISBN
 
 A Python isbn request library using the http://xisbn.worldcat.org/xisbnadmin/doc/api.htm API.
 
-ISBN provides a Book class, which has all of the methods described on the xisbn.worldcat API, implemented in Python.
+ISBN provides a Book class, which has all of the methods described on the xisbn.worldcat API, implemented in python.
 
 ISBN supports both ISBN-10 and ISBN-13 numbers at the moment.
 
@@ -18,7 +18,7 @@ Basic Usage
 >>> book.title
 'Vocabulary workshop.'
 >>> book.getMetadata()  # desired_parameters defaults to all of the possible values.
->>> for attr in book.attributes:  # A list of attributes that is created dependinging the available data.
+>>> for attr in book.attributes:  # A list of attributes that is created depending the available data.
 >>>     print attr + ': ', getattr(book, attr)
 isbn10:  None
 isbn13:  9780821571095

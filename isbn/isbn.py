@@ -159,7 +159,7 @@ Example:
         acquired_attributes = []
         response = self._get_response('getMetadata')
         if not response:
-            return False# Break here if invalid.
+            return False  # Break here if invalid.
         for data in response['list']:
             for name in desired_attributes:
                 if name in data:
@@ -209,7 +209,7 @@ The result gets stored in self.isbn10"""
 
     def fixChecksum(self):
         """Fixes the last digit of an incorrect ISBN-13 number.
-        
+
 The last digit of a ISBN-13 value is calculated with the ISBN number up until that last number.
 See http://www.isbn-13.info/ for more information on how this is done.
 
@@ -220,22 +220,18 @@ Sets (resets):
 
 Example:
 
->>> book = Book('9780821571097')
->>> try:
-...     book.getMetadata()
-... except QueryError, error:
-...     print(error)
-...
-Could not find '9780821571097'
-    Reason: invalidId
->>> book.fixChecksum()
->>> try:
-...     book.getMetadata()
-... except QueryError, error:
-...     print(error)
-...
->>> book.title
-'Vocabulary workshop.'
+    >>> book = Book('9780821571096')  # Incorrect ISBN-13 number
+    >>> try:
+    ...     book.getMetadata()
+    ... except QueryError:
+    ...     book.fixChecksum()
+    ...     print("Fixed Checksum! ISBN-13 is now '%s'." % book.isbn)
+    ...     book.getMetadata()
+    ...
+    ['9780821571095']
+    Fixed Checksum! ISBN-13 is now '9780821571095'.
+    >>> book.title
+    Vocabulary workshop.
 """
         response = self._get_response('fixChecksum')
         for item in response['list']:
@@ -276,4 +272,11 @@ Could not find '9780821571097'
 
 if __name__ == '__main__':
 
-    book = Book('9780821571097')
+    book = Book('9780821571096')  # Incorrect ISBN-13 number
+    try:
+        book.getMetadata()
+    except QueryError:
+        book.fixChecksum()
+        print("Fixed Checksum!\nISBN-13 is now '%s'." % book.isbn)
+        book.getMetadata()
+    print("Title: %s" % book.title)
