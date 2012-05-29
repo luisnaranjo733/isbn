@@ -1,6 +1,6 @@
-"""A
+"""An isbn web query API based on http://xisbn.worldcat.org/xisbnadmin/doc/api.htm
 
-
+Author : Luis Naranjo <luisnaranjo733@hotmail.com>
 """
 
 try:
@@ -22,9 +22,10 @@ maximal_parameters = ['city', 'ed', 'form', 'AA', 'lang', 'lccn', 'oclcnum', 'or
 
 class Book(object):
     def __init__(self, isbn):
-        """Takes url and method as input, returns API object.
+        """Takes an ISBN as input.
 
-        Attributes are created dynamically, depending on their availability."""
+        Attributes are created dynamically."""
+
         self.isbn = isbn
         self.attributes = []  # TODO: Maintain this
         self.added_metadata = False
@@ -39,7 +40,9 @@ class Book(object):
         if len(isbn) in [10, 13]:
             self.attributes.extend(['isbn10', 'isbn13'])
 
-    def get_response(self, method):
+    def _get_response(self, method):
+        """A helper function for looking up the requested API methods and returning the raw data."""
+
         url = api_url.format(isbn=self.isbn, method=method)  # Generate URL for API
         urlf = urlopen(url)  # Retrieve URL as a JSON file object
         response = json.load(urlf)  # Parse
@@ -76,7 +79,7 @@ Example:
     True
     """
 
-        response = self.get_response('getEditions')
+        response = self._get_response('getEditions')
         self.editions = []
         self.attributes.append('editions')  # A list of dictionaries holding information about each edition.
         for item in response['list']:
@@ -93,7 +96,7 @@ Example:
         """Returns a list of the newly attributes."""
 
         acquired_attributes = []
-        response = self.get_response('getMetadata')
+        response = self._get_response('getMetadata')
         if not response:
             return  # Break here if invalid.
         for data in response['list']:
@@ -116,7 +119,7 @@ The result gets stored in self.isbn13"""
 
         if not self.isbn13:
             isbns = []
-            response = self.get_response('to13')
+            response = self._get_response('to13')
             if not response:
                 return  # Break here if invalid.
             for item in response['list']:
@@ -134,7 +137,7 @@ The result gets stored in self.isbn10"""
 
         if not self.isbn10:
             isbns = []
-            response = self.get_response('to10')
+            response = self._get_response('to10')
             if not response:
                 return  # Break here if invalid.
             for item in response['list']:
@@ -145,7 +148,7 @@ The result gets stored in self.isbn10"""
             return isbns[0]  # TODO: Return the whole list?
 
     def fixChecksum(self):
-        response = self.get_response('fixChecksum')
+        response = self._get_response('fixChecksum')
         for item in response['list']:
             fixedChecksum = item['isbn']
             if fixedChecksum:
@@ -154,7 +157,7 @@ The result gets stored in self.isbn10"""
             return fixedChecksum
 
     def hyphen(self):
-        response = self.get_response('hyphen')
+        response = self._get_response('hyphen')
         for item in response['list']:
             hyphenated = item['isbn']
             if hyphenated:  # To prevent an IndexError in the case of an empty list.
