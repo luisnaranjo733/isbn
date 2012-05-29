@@ -87,8 +87,14 @@ class Book(object):
         return isbns[0]  # TODO: Return the whole list?
 
     def fixChecksum(self):
-        pass
-
+        response = self.get_response('fixChecksum')
+        for item in response['list']:
+            fixedChecksum = item['isbn']
+            if fixedChecksum:
+                self.fixedChecksum = fixedChecksum[0]
+            self.attributes.append('fixedChecksum')
+            return fixedChecksum
+            
     def hyphen(self):
         response = self.get_response('hyphen')
         for item in response['list']:

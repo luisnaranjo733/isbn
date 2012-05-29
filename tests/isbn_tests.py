@@ -10,6 +10,7 @@ tests = {
         'year': '2010',
         'city': 'Boston',
         'hyphenated': '978-0-312-53861-3',
+        'fixedChecksum': '9780312538613',
 
     },
     '9780451524935': {
@@ -21,7 +22,8 @@ tests = {
         'year': '1961',
         'city': 'New York, N.Y.',
         'hyphenated': '978-0-451-52493-5',
-
+        'fixedChecksum': '9780451524935',
+        
     },
     '9780439784542': {
         'isbn10': '0439784549',  # These should all be expected attributes of the new instance
@@ -32,7 +34,8 @@ tests = {
         'year': '2005',
         'city': 'New York, NY',
         'hyphenated': '978-0-439-78454-2',
-
+        'fixedChecksum': '9780439784542',
+        
     },
     '0446360260': {
         'isbn10': '0446360260',  # These should all be expected attributes of the new instance
@@ -43,7 +46,8 @@ tests = {
         'year': '1990',
         'city': 'New York (N.Y.)',
         'hyphenated': '0-446-36026-0',
-
+        'fixedChecksum': '0446360260',
+        
     },
 }
 
