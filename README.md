@@ -36,3 +36,13 @@ It scans a barcode, looks it up with the http://xisbn.worldcat.org/xisbnadmin/do
 
 + Occasionally, when trying to scan the exit_code.png barcode, my phone picks
   up an EAN_8 barcode with some strange number.
+
+## Future Idea
+
++ Add a manual input GUI for barcodes that are not found in the worldcat
+  database
+
++ Text to speech verification with the android API's
+
++ Multiple ISBN lookup API's to fall back on if a query is not found on
+  worldcat
