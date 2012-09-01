@@ -1,4 +1,4 @@
-from isbn import Book, minimal_parameters
+from lookup import Book, minimal_parameters
 
 tests = {
     '9780312538613': {  # ISBN at __init__
@@ -10,7 +10,6 @@ tests = {
         'year': '2010',
         'city': 'Boston',
         'hyphenated': '978-0-312-53861-3',
-        'fixedChecksum': '9780312538613',
 
     },
     '9780451524935': {
@@ -22,7 +21,6 @@ tests = {
         'year': '1961',
         'city': 'New York, N.Y.',
         'hyphenated': '978-0-451-52493-5',
-        'fixedChecksum': '9780451524935',
 
     },
     '9780439784542': {
@@ -34,7 +32,6 @@ tests = {
         'year': '2005',
         'city': 'New York, NY',
         'hyphenated': '978-0-439-78454-2',
-        'fixedChecksum': '9780439784542',
 
     },
     '0446360260': {
@@ -46,7 +43,6 @@ tests = {
         'year': '1990',
         'city': 'New York (N.Y.)',
         'hyphenated': '0-446-36026-0',
-        'fixedChecksum': '0446360260',
 
     },
 }
@@ -71,8 +67,8 @@ def test_api():
     if all(results):
         print("All of the tests have passed.")
 
-    if not all(results):
-        print ("Not all of the tests have passed.")
+    else:
+        print("Not all of the tests have passed.")
 
 
 if __name__ == '__main__':

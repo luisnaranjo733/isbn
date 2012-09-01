@@ -41,7 +41,8 @@ maximal_parameters = ['city', 'ed', 'form', 'lang', 'lccn', 'oclcnum', 'original
 
 
 class QueryError(Exception):
-    pass
+    def __init__(self, reason=None):
+        self.reason = reason
 
 
 class Book(object):
