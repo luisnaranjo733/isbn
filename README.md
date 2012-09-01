@@ -1,4 +1,4 @@
-# ISBN Android Cataloguing
+# ISBN Android Cataloging
 
 This is a SL4A (Scripting Layer for Android) script that I used for cataloguing
 my personal book library.
@@ -37,7 +37,7 @@ It scans a barcode, looks it up with the http://xisbn.worldcat.org/xisbnadmin/do
 + Occasionally, when trying to scan the exit_code.png barcode, my phone picks
   up an EAN_8 barcode with some strange number.
 
-## Future Idea
+## Future Ideas
 
 + Add a manual input GUI for barcodes that are not found in the worldcat
   database
