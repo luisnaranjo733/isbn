@@ -15,10 +15,7 @@ from lookup import Book, minimal_parameters, QueryError
 
 droid = android.Android()
 
-catalog_path = '/sdcard/sl4a/scripts/isbn/books.txt' # desired path to catalogue file
-if sys.platform == 'linux2':  # For development
-    catalog_path = os.path.join(os.environ['PWD'], 'books.txt')
-
+catalog_path = os.path.abspath(os.path.join(os.path.dirname(__file__), 'books.txt'))
 
 def prettify(data):
     '''Takes a dictionary of data and returns it as a pretty string.'''
